@@ -1,0 +1,28 @@
+{
+  "name": "movie-recommend-api",
+  "version": "1.0.0",
+  "description": "Backend API for Movie Recommendation System (Express + PostgreSQL)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "express",
+    "postgresql",
+    "movies",
+    "recommendation",
+    "api"
+  ],
+  "author": "ukm25",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
