@@ -69,9 +69,10 @@ app.get('/api/movies', async (req, res) => {
       hasMore: movies.length === limit
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -91,9 +92,10 @@ app.get('/api/movies/:id', async (req, res) => {
       data: movie
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -109,9 +111,10 @@ app.get('/api/movies/hot/list', async (req, res) => {
       count: movies.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -126,9 +129,10 @@ app.get('/api/movies/search/:term', async (req, res) => {
       count: movies.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -143,9 +147,10 @@ app.get('/api/movies/genre/:name', async (req, res) => {
       count: movies.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -160,9 +165,10 @@ app.get('/api/genres', async (req, res) => {
       count: genres.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -179,9 +185,10 @@ app.get('/api/users', async (req, res) => {
       count: users.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -201,9 +208,10 @@ app.get('/api/users/:id', async (req, res) => {
       data: user
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -237,9 +245,10 @@ app.post('/api/auth/login', async (req, res) => {
       data: userWithoutPassword
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -262,9 +271,10 @@ app.post('/api/users', async (req, res) => {
       data: user
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -281,9 +291,10 @@ app.get('/api/watch-history/user/:userId', async (req, res) => {
       count: history.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -298,9 +309,10 @@ app.get('/api/watch-history/all', async (req, res) => {
       count: history.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -323,9 +335,10 @@ app.post('/api/watch-history', async (req, res) => {
       data: result
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -350,9 +363,10 @@ app.delete('/api/watch-history/:userId/:movieId', async (req, res) => {
       data: result
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -367,9 +381,10 @@ app.get('/api/watch-history/user/:userId/preferences', async (req, res) => {
       count: preferences.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -384,9 +399,10 @@ app.get('/api/watch-history/trends', async (req, res) => {
       count: trends.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -403,9 +419,10 @@ app.get('/api/watch-history/check/:userId/:movieId', async (req, res) => {
       data: { hasWatched }
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -426,9 +443,10 @@ app.get('/api/recommendations/user/:userId', async (req, res) => {
       count: recommendations.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -447,9 +465,10 @@ app.get('/api/recommendations/similar/:movieId', async (req, res) => {
       count: similar.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -466,9 +485,10 @@ app.get('/api/recommendations/trending', async (req, res) => {
       count: trending.length
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 });
@@ -495,7 +515,7 @@ app.use((err, req, res, next) => {
 
 // ==================== START SERVER ====================
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📍 API endpoint: http://localhost:${PORT}/api`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
@@ -512,6 +532,9 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   console.log('SIGINT signal received: closing HTTP server');
-  process.exit(0);
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
 });
 

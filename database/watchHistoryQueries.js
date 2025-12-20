@@ -16,10 +16,10 @@ const getUserWatchHistory = async (userId) => {
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
     FROM watch_history wh
-    INNER JOIN movies m ON wh.movie_id = m.movieId
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    INNER JOIN movies m ON wh.movie_id = m."movieId"
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
     WHERE wh.user_id = $1
     GROUP BY wh.id, wh.user_id, wh.movie_id, wh.watched_at, 
              m.movie_title, m.release_year
@@ -53,7 +53,7 @@ const getAllUsersWatchHistory = async () => {
     FROM users u
     LEFT JOIN watch_history wh ON u.id = wh.user_id
     LEFT JOIN movies m ON wh.movie_id = m.movieId
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
     WHERE COALESCE(u.role, 'viewer') = 'viewer'
     GROUP BY u.id, u.username
@@ -142,10 +142,10 @@ const getUserGenrePreferences = async (userId) => {
       COUNT(*) as watch_count,
       ROUND(AVG(COALESCE(r.rating, 0))::numeric, 2) as avg_rating
     FROM watch_history wh
-    INNER JOIN movies m ON wh.movie_id = m.movieId
-    INNER JOIN movie_genres mg ON m.movieId = mg.movie_id
+    INNER JOIN movies m ON wh.movie_id = m."movieId"
+    INNER JOIN movie_genres mg ON m."movieId" = mg.movie_id
     INNER JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId AND r.userId = $1
+    LEFT JOIN ratings r ON m."movieId" = r."movieId" AND r."userId" = $1
     WHERE wh.user_id = $1
     GROUP BY g.genre
     ORDER BY watch_count DESC, avg_rating DESC
@@ -171,10 +171,10 @@ const getGenreTrends = async () => {
       COUNT(wh.id) as total_watches,
       ROUND(AVG(COALESCE(r.rating, 0))::numeric, 2) as avg_rating
     FROM watch_history wh
-    INNER JOIN movies m ON wh.movie_id = m.movieId
-    INNER JOIN movie_genres mg ON m.movieId = mg.movie_id
+    INNER JOIN movies m ON wh.movie_id = m."movieId"
+    INNER JOIN movie_genres mg ON m."movieId" = mg.movie_id
     INNER JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
     GROUP BY g.genre
     ORDER BY total_watches DESC, users_count DESC
   `;

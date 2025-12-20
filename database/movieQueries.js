@@ -6,17 +6,17 @@ const { query } = require('./config');
 const getAllMovies = async (limit = 20, offset = 0) => {
   const sql = `
     SELECT 
-      m.movieId as id,
+      m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
       COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
     FROM movies m
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
-    GROUP BY m.movieId, m.movie_title, m.release_year
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
+    GROUP BY m."movieId", m.movie_title, m.release_year
     ORDER BY m.movie_title ASC
     LIMIT $1 OFFSET $2
   `;
@@ -40,18 +40,18 @@ const getAllMovies = async (limit = 20, offset = 0) => {
 const getMovieById = async (movieId) => {
   const sql = `
     SELECT 
-      m.movieId as id,
+      m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
       COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
     FROM movies m
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
-    WHERE m.movieId = $1
-    GROUP BY m.movieId, m.movie_title, m.release_year
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
+    WHERE m."movieId" = $1
+    GROUP BY m."movieId", m.movie_title, m.release_year
   `;
   
   try {
@@ -76,7 +76,7 @@ const getMovieById = async (movieId) => {
 const getHotMovies = async (limit = 10) => {
   const sql = `
     SELECT 
-      m.movieId as id,
+      m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
       AVG(r.rating)::numeric(3,1) as rating,
@@ -84,11 +84,11 @@ const getHotMovies = async (limit = 10) => {
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
     FROM movies m
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
     WHERE m.release_year >= 2010
-    GROUP BY m.movieId, m.movie_title, m.release_year
+    GROUP BY m."movieId", m.movie_title, m.release_year
     HAVING COUNT(r.rating) >= 50 AND AVG(r.rating) >= 4.0
     ORDER BY AVG(r.rating) DESC, m.release_year DESC
     LIMIT $1
@@ -113,20 +113,20 @@ const getHotMovies = async (limit = 10) => {
 const searchMovies = async (searchTerm) => {
   const sql = `
     SELECT DISTINCT
-      m.movieId as id,
+      m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
       COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
     FROM movies m
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
     WHERE 
       LOWER(m.movie_title) LIKE LOWER($1) OR
       LOWER(g.genre) LIKE LOWER($1)
-    GROUP BY m.movieId, m.movie_title, m.release_year
+    GROUP BY m."movieId", m.movie_title, m.release_year
     ORDER BY m.movie_title ASC
     LIMIT 100
   `;
@@ -150,20 +150,20 @@ const searchMovies = async (searchTerm) => {
 const getMoviesByGenre = async (genreName) => {
   const sql = `
     SELECT 
-      m.movieId as id,
+      m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
       COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g2.genre) FILTER (WHERE g2.genre IS NOT NULL) as genres
     FROM movies m
-    INNER JOIN movie_genres mg ON m.movieId = mg.movie_id
+    INNER JOIN movie_genres mg ON m."movieId" = mg.movie_id
     INNER JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN movie_genres mg2 ON m.movieId = mg2.movie_id
+    LEFT JOIN movie_genres mg2 ON m."movieId" = mg2.movie_id
     LEFT JOIN genres g2 ON mg2.genre_id = g2.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
     WHERE LOWER(g.genre) = LOWER($1)
-    GROUP BY m.movieId, m.movie_title, m.release_year
+    GROUP BY m."movieId", m.movie_title, m.release_year
     ORDER BY AVG(r.rating) DESC NULLS LAST
     LIMIT 100
   `;

@@ -12,8 +12,8 @@ const getRecommendations = async (userId, limit = 10) => {
         g.genre as genre_name,
         COUNT(*) as watch_count
       FROM watch_history wh
-      INNER JOIN movies m ON wh.movie_id = m.movieId
-      INNER JOIN movie_genres mg ON m.movieId = mg.movie_id
+      INNER JOIN movies m ON wh.movie_id = m."movieId"
+      INNER JOIN movie_genres mg ON m."movieId" = mg.movie_id
       INNER JOIN genres g ON mg.genre_id = g.id
       WHERE wh.user_id = $1
       GROUP BY g.id, g.genre
@@ -29,7 +29,7 @@ const getRecommendations = async (userId, limit = 10) => {
     recommended_movies AS (
       -- Get movies with user's favorite genres that haven't been watched
       SELECT DISTINCT
-        m.movieId as id,
+        m."movieId" as id,
         m.movie_title as title,
         m.release_year as year,
         AVG(r.rating)::numeric(3,1) as rating,
@@ -37,13 +37,13 @@ const getRecommendations = async (userId, limit = 10) => {
         ARRAY_AGG(DISTINCT g2.genre) FILTER (WHERE g2.genre IS NOT NULL) as genres,
         COUNT(DISTINCT ug.genre_id) as matching_genres
       FROM movies m
-      INNER JOIN movie_genres mg ON m.movieId = mg.movie_id
+      INNER JOIN movie_genres mg ON m."movieId" = mg.movie_id
       INNER JOIN user_genres ug ON mg.genre_id = ug.genre_id
-      LEFT JOIN movie_genres mg2 ON m.movieId = mg2.movie_id
+      LEFT JOIN movie_genres mg2 ON m."movieId" = mg2.movie_id
       LEFT JOIN genres g2 ON mg2.genre_id = g2.id
-      LEFT JOIN ratings r ON m.movieId = r.movieId
-      WHERE m.movieId NOT IN (SELECT movie_id FROM watched_movies)
-      GROUP BY m.movieId, m.movie_title, m.release_year
+      LEFT JOIN ratings r ON m."movieId" = r."movieId"
+      WHERE m."movieId" NOT IN (SELECT movie_id FROM watched_movies)
+      GROUP BY m."movieId", m.movie_title, m.release_year
       HAVING COUNT(r.rating) >= 10
       ORDER BY matching_genres DESC, AVG(r.rating) DESC NULLS LAST
       LIMIT $2
@@ -78,7 +78,7 @@ const getSimilarMovies = async (movieId, limit = 5) => {
     similar_movies AS (
       -- Find movies with similar genres
       SELECT DISTINCT
-        m.movieId as id,
+        m."movieId" as id,
         m.movie_title as title,
         m.release_year as year,
         AVG(r.rating)::numeric(3,1) as rating,
@@ -86,12 +86,12 @@ const getSimilarMovies = async (movieId, limit = 5) => {
         ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres,
         COUNT(DISTINCT mg2.genre_id) as matching_genres
       FROM movies m
-      INNER JOIN movie_genres mg2 ON m.movieId = mg2.movie_id
+      INNER JOIN movie_genres mg2 ON m."movieId" = mg2.movie_id
       LEFT JOIN genres g ON mg2.genre_id = g.id
-      LEFT JOIN ratings r ON m.movieId = r.movieId
+      LEFT JOIN ratings r ON m."movieId" = r."movieId"
       WHERE mg2.genre_id IN (SELECT genre_id FROM movie_genres_list)
-        AND m.movieId != $1
-      GROUP BY m.movieId, m.movie_title, m.release_year
+        AND m."movieId" != $1
+      GROUP BY m."movieId", m.movie_title, m.release_year
       HAVING COUNT(r.rating) >= 10
       ORDER BY matching_genres DESC, AVG(r.rating) DESC NULLS LAST
       LIMIT $2
@@ -118,7 +118,7 @@ const getSimilarMovies = async (movieId, limit = 5) => {
 const getTrendingMovies = async (days = 7, limit = 10) => {
   const sql = `
     SELECT 
-      m.movieId as id,
+      m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
       AVG(r.rating)::numeric(3,1) as rating,
@@ -126,12 +126,12 @@ const getTrendingMovies = async (days = 7, limit = 10) => {
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres,
       COUNT(wh.id) as watch_count
     FROM movies m
-    INNER JOIN watch_history wh ON m.movieId = wh.movie_id
-    LEFT JOIN movie_genres mg ON m.movieId = mg.movie_id
+    INNER JOIN watch_history wh ON m."movieId" = wh.movie_id
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
     LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m.movieId = r.movieId
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
     WHERE wh.watched_at >= NOW() - INTERVAL '${days} days'
-    GROUP BY m.movieId, m.movie_title, m.release_year
+    GROUP BY m."movieId", m.movie_title, m.release_year
     ORDER BY watch_count DESC, AVG(r.rating) DESC NULLS LAST
     LIMIT $1
   `;
