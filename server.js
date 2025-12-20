@@ -58,8 +58,9 @@ app.get('/api/movies', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;
     const offset = parseInt(req.query.offset) || 0;
+    const userId = req.query.userId ? parseInt(req.query.userId) : null;
     
-    const movies = await movieQueries.getAllMovies(limit, offset);
+    const movies = await movieQueries.getAllMovies(limit, offset, userId);
     res.json({
       success: true,
       data: movies,

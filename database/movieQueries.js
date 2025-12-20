@@ -2,30 +2,63 @@ const { query } = require('./config');
 
 /**
  * Get all movies with their genres (with pagination)
+ * @param {number} limit - Number of movies to return
+ * @param {number} offset - Number of movies to skip
+ * @param {number} userId - Optional user ID to check watch history
  */
-const getAllMovies = async (limit = 20, offset = 0) => {
-  const sql = `
-    SELECT 
-      m."movieId" as id,
-      m.movie_title as title,
-      m.release_year as year,
-      COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
-      m.movie_title as description,
-      ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
-    FROM movies m
-    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
-    LEFT JOIN genres g ON mg.genre_id = g.id
-    LEFT JOIN ratings r ON m."movieId" = r."movieId"
-    GROUP BY m."movieId", m.movie_title, m.release_year
-    ORDER BY m.movie_title ASC
-    LIMIT $1 OFFSET $2
-  `;
+const getAllMovies = async (limit = 20, offset = 0, userId = null) => {
+  let sql;
+  let params;
+  
+  if (userId) {
+    // Query with userId to check watch history
+    sql = `
+      SELECT 
+        m."movieId" as id,
+        m.movie_title as title,
+        m.release_year as year,
+        COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
+        m.movie_title as description,
+        ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres,
+        CASE WHEN wh.movie_id IS NOT NULL THEN true ELSE false END as isWatched
+      FROM movies m
+      LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
+      LEFT JOIN genres g ON mg.genre_id = g.id
+      LEFT JOIN ratings r ON m."movieId" = r."movieId"
+      LEFT JOIN watch_history wh ON m."movieId" = wh.movie_id AND wh.user_id = $3
+      GROUP BY m."movieId", m.movie_title, m.release_year, wh.movie_id
+      ORDER BY m.movie_title ASC
+      LIMIT $1 OFFSET $2
+    `;
+    params = [limit, offset, userId];
+  } else {
+    // Query without userId - no watch history check
+    sql = `
+      SELECT 
+        m."movieId" as id,
+        m.movie_title as title,
+        m.release_year as year,
+        COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
+        m.movie_title as description,
+        ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres,
+        false as isWatched
+      FROM movies m
+      LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
+      LEFT JOIN genres g ON mg.genre_id = g.id
+      LEFT JOIN ratings r ON m."movieId" = r."movieId"
+      GROUP BY m."movieId", m.movie_title, m.release_year
+      ORDER BY m.movie_title ASC
+      LIMIT $1 OFFSET $2
+    `;
+    params = [limit, offset];
+  }
   
   try {
-    const result = await query(sql, [limit, offset]);
+    const result = await query(sql, params);
     return result.rows.map(row => ({
       ...row,
       genres: row.genres || [],
+      isWatched: row.iswatched || false,
       image_url: `https://via.placeholder.com/300x450/1a1a1a/e0e0e0?text=${encodeURIComponent(row.title)}`
     }));
   } catch (error) {
