@@ -10,6 +10,9 @@ const getAllMovies = async (limit = 20, offset = 0, userId = null) => {
   let sql;
   let params;
   
+  // Query limit + 1 to check if there are more movies
+  const queryLimit = limit + 1;
+  
   if (userId) {
     // Query with userId to check watch history
     sql = `
@@ -20,17 +23,17 @@ const getAllMovies = async (limit = 20, offset = 0, userId = null) => {
         COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
         m.movie_title as description,
         ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres,
-        CASE WHEN wh.movie_id IS NOT NULL THEN true ELSE false END as isWatched
+        CASE WHEN MAX(wh.movie_id) IS NOT NULL THEN true ELSE false END as isWatched
       FROM movies m
       LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
       LEFT JOIN genres g ON mg.genre_id = g.id
       LEFT JOIN ratings r ON m."movieId" = r."movieId"
       LEFT JOIN watch_history wh ON m."movieId" = wh.movie_id AND wh.user_id = $3
-      GROUP BY m."movieId", m.movie_title, m.release_year, wh.movie_id
+      GROUP BY m."movieId", m.movie_title, m.release_year
       ORDER BY m.movie_title ASC
       LIMIT $1 OFFSET $2
     `;
-    params = [limit, offset, userId];
+    params = [queryLimit, offset, userId];
   } else {
     // Query without userId - no watch history check
     sql = `
@@ -50,17 +53,25 @@ const getAllMovies = async (limit = 20, offset = 0, userId = null) => {
       ORDER BY m.movie_title ASC
       LIMIT $1 OFFSET $2
     `;
-    params = [limit, offset];
+    params = [queryLimit, offset];
   }
   
   try {
     const result = await query(sql, params);
-    return result.rows.map(row => ({
+    const rows = result.rows;
+    
+    // Check if there are more movies (if we got limit + 1, there are more)
+    const hasMore = rows.length > limit;
+    
+    // Return only the requested limit
+    const movies = rows.slice(0, limit).map(row => ({
       ...row,
       genres: row.genres || [],
       isWatched: row.iswatched || false,
       image_url: `https://via.placeholder.com/300x450/1a1a1a/e0e0e0?text=${encodeURIComponent(row.title)}`
     }));
+    
+    return { movies, hasMore };
   } catch (error) {
     console.error('Error getting all movies:', error);
     throw error;

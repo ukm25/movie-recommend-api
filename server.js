@@ -6,6 +6,7 @@ const movieQueries = require('./database/movieQueries');
 const userQueries = require('./database/userQueries');
 const watchHistoryQueries = require('./database/watchHistoryQueries');
 const recommendationQueries = require('./database/recommendationQueries');
+const ratingQueries = require('./database/ratingQueries');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -60,14 +61,14 @@ app.get('/api/movies', async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
     const userId = req.query.userId ? parseInt(req.query.userId) : null;
     
-    const movies = await movieQueries.getAllMovies(limit, offset, userId);
+    const result = await movieQueries.getAllMovies(limit, offset, userId);
     res.json({
       success: true,
-      data: movies,
-      count: movies.length,
+      data: result.movies,
+      count: result.movies.length,
       limit,
       offset,
-      hasMore: movies.length === limit
+      hasMore: result.hasMore
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -487,6 +488,61 @@ app.get('/api/recommendations/trending', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+// ==================== RATING ROUTES ====================
+
+// Get user rating for a movie
+app.get('/api/ratings/user/:userId/movie/:movieId', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const movieId = parseInt(req.params.movieId);
+    
+    const rating = await ratingQueries.getUserRating(userId, movieId);
+    res.json({
+      success: true,
+      data: { rating: rating || null }
+    });
+  } catch (error) {
+    console.error('Error getting user rating:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+// Add or update user rating
+app.post('/api/ratings', async (req, res) => {
+  try {
+    const { userId, movieId, rating } = req.body;
+    
+    if (!userId || !movieId || rating === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId, movieId, and rating are required'
+      });
+    }
+    
+    if (rating < 0.5 || rating > 5.0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Rating must be between 0.5 and 5.0'
+      });
+    }
+    
+    const result = await ratingQueries.addOrUpdateRating(userId, movieId, rating);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error adding/updating rating:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'

@@ -318,8 +318,8 @@ PORT=5001
 2. Connect GitHub repository
 3. Cấu hình:
    - **Build Command**: `npm install`
-   - **Start Command**: `node backend/server.js`
-   - **Environment Variables**: Copy từ `.env`
+   - **Start Command**: `node server.js` (nếu deploy từ Backend folder) hoặc `cd Backend && node server.js` (nếu deploy từ root)
+   - **Environment Variables**: Copy từ `.env` (KHÔNG commit file .env lên git)
 4. Add PostgreSQL database connection
 5. Deploy!
 
