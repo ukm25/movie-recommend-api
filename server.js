@@ -71,7 +71,7 @@ app.get('/api/movies', async (req, res) => {
       hasMore: result.hasMore
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting movies:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -94,7 +94,7 @@ app.get('/api/movies/:id', async (req, res) => {
       data: movie
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting movie by ID:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -113,7 +113,7 @@ app.get('/api/movies/hot/list', async (req, res) => {
       count: movies.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting hot movies:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -131,7 +131,7 @@ app.get('/api/movies/search/:term', async (req, res) => {
       count: movies.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error searching movies:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -149,7 +149,7 @@ app.get('/api/movies/genre/:name', async (req, res) => {
       count: movies.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting movies by genre:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -167,7 +167,7 @@ app.get('/api/genres', async (req, res) => {
       count: genres.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting genres:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -187,7 +187,7 @@ app.get('/api/users', async (req, res) => {
       count: users.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting users:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -210,7 +210,7 @@ app.get('/api/users/:id', async (req, res) => {
       data: user
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting user by ID:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -273,7 +273,7 @@ app.post('/api/users', async (req, res) => {
       data: user
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error creating user:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -293,7 +293,7 @@ app.get('/api/watch-history/user/:userId', async (req, res) => {
       count: history.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting user watch history:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -311,7 +311,7 @@ app.get('/api/watch-history/all', async (req, res) => {
       count: history.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting all users watch history:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -337,7 +337,7 @@ app.post('/api/watch-history', async (req, res) => {
       data: result
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error adding to watch history:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -365,7 +365,7 @@ app.delete('/api/watch-history/:userId/:movieId', async (req, res) => {
       data: result
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error removing from watch history:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -383,7 +383,7 @@ app.get('/api/watch-history/user/:userId/preferences', async (req, res) => {
       count: preferences.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting user genre preferences:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -401,7 +401,7 @@ app.get('/api/watch-history/trends', async (req, res) => {
       count: trends.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting genre trends:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -421,7 +421,7 @@ app.get('/api/watch-history/check/:userId/:movieId', async (req, res) => {
       data: { hasWatched }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error checking watch history:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -435,17 +435,22 @@ app.get('/api/watch-history/check/:userId/:movieId', async (req, res) => {
 app.get('/api/recommendations/user/:userId', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const recommendations = await recommendationQueries.getRecommendations(
+    const offset = parseInt(req.query.offset) || 0;
+    const result = await recommendationQueries.getRecommendations(
       req.params.userId,
-      limit
+      limit,
+      offset
     );
     res.json({
       success: true,
-      data: recommendations,
-      count: recommendations.length
+      data: result.movies || result,
+      count: result.movies ? result.movies.length : (result.length || 0),
+      hasMore: result.hasMore || false,
+      limit,
+      offset
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting recommendations:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -467,7 +472,7 @@ app.get('/api/recommendations/similar/:movieId', async (req, res) => {
       count: similar.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting similar movies:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -487,7 +492,7 @@ app.get('/api/recommendations/trending', async (req, res) => {
       count: trending.length
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error getting trending movies:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'

@@ -1,10 +1,53 @@
 const { query } = require('./config');
 
 /**
- * Get movie recommendations for a user based on their watch history
+ * Get movie recommendations for a user from recommendations table
+ * Falls back to watch_history-based logic if recommendations table doesn't exist or is empty
  */
-const getRecommendations = async (userId, limit = 10) => {
-  const sql = `
+const getRecommendations = async (userId, limit = 10, offset = 0) => {
+  // First, try to get from recommendations table if it exists
+  // Query limit + 1 to check if there are more results
+  const recommendationsTableSql = `
+    SELECT 
+      m."movieId" as id,
+      m.movie_title as title,
+      m.release_year as year,
+      COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
+      m.movie_title as description,
+      ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres,
+      COALESCE(MAX(rec.score), 0) as recommendation_score
+    FROM recommendations rec
+    INNER JOIN movies m ON rec.movie_id = m."movieId"
+    LEFT JOIN movie_genres mg ON m."movieId" = mg.movie_id
+    LEFT JOIN genres g ON mg.genre_id = g.id
+    LEFT JOIN ratings r ON m."movieId" = r."movieId"
+    WHERE rec.user_id = $1
+    GROUP BY m."movieId", m.movie_title, m.release_year
+    ORDER BY recommendation_score DESC, AVG(r.rating) DESC NULLS LAST
+    LIMIT $2 + 1 OFFSET $3
+  `;
+  
+  try {
+    // Try to query from recommendations table
+    const result = await query(recommendationsTableSql, [userId, limit, offset]);
+    
+    if (result.rows.length > 0) {
+      const hasMore = result.rows.length > limit;
+      const movies = result.rows.slice(0, limit).map(row => ({
+        ...row,
+        genres: row.genres || [],
+        image_url: `https://via.placeholder.com/300x450/1a1a1a/e0e0e0?text=${encodeURIComponent(row.title)}`
+      }));
+      
+      return { movies, hasMore };
+    }
+  } catch (error) {
+    // If recommendations table doesn't exist or has error, fall back to watch_history logic
+    console.log('Recommendations table not found or empty, falling back to watch_history logic');
+  }
+  
+  // Fallback: Get recommendations based on watch history
+  const fallbackSql = `
     WITH user_genres AS (
       -- Get user's favorite genres based on watch history
       SELECT 
@@ -46,18 +89,21 @@ const getRecommendations = async (userId, limit = 10) => {
       GROUP BY m."movieId", m.movie_title, m.release_year
       HAVING COUNT(r.rating) >= 10
       ORDER BY matching_genres DESC, AVG(r.rating) DESC NULLS LAST
-      LIMIT $2
+      LIMIT $2 + 1 OFFSET $3
     )
     SELECT * FROM recommended_movies;
   `;
   
   try {
-    const result = await query(sql, [userId, limit]);
-    return result.rows.map(row => ({
+    const result = await query(fallbackSql, [userId, limit, offset]);
+    const hasMore = result.rows.length > limit;
+    const movies = result.rows.slice(0, limit).map(row => ({
       ...row,
       genres: row.genres || [],
       image_url: `https://via.placeholder.com/300x450/1a1a1a/e0e0e0?text=${encodeURIComponent(row.title)}`
     }));
+    
+    return { movies, hasMore };
   } catch (error) {
     console.error('Error getting recommendations:', error);
     throw error;

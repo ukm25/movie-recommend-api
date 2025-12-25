@@ -15,16 +15,19 @@ npm install
 Đảm bảo file `.env` đã được tạo ở root directory với thông tin database:
 
 ```env
-DB_HOST=dpg-d4m61da4d50c73eeecd0-a.oregon-postgres.render.com
+DB_HOST=your-database-host
 DB_PORT=5432
-DB_NAME=movie_recommendation_system_seei
-DB_USER=movie_recommendation_system_seei_user
-DB_PASSWORD=FassQu6urZDRnOaeNKAxO5XcwCX19Ct0
-DATABASE_URL=postgresql://movie_recommendation_system_seei_user:FassQu6urZDRnOaeNKAxO5XcwCX19Ct0@dpg-d4m61da4d50c73eeecd0-a.oregon-postgres.render.com/movie_recommendation_system_seei
+DB_NAME=your-database-name
+DB_USER=your-database-user
+DB_PASSWORD=your-database-password
+DATABASE_URL=postgresql://your-database-user:your-database-password@your-database-host:5432/your-database-name
 
 PORT=5000
 NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
 ```
+
+**Note**: Copy `.env.example` to `.env` and fill in your actual database credentials.
 
 ### 3. Khởi Tạo Database
 

@@ -123,7 +123,7 @@ const getHotMovies = async (limit = 10) => {
       m."movieId" as id,
       m.movie_title as title,
       m.release_year as year,
-      AVG(r.rating)::numeric(3,1) as rating,
+      COALESCE(AVG(r.rating)::numeric(3,1), 0) as rating,
       COUNT(r.rating) as rating_count,
       m.movie_title as description,
       ARRAY_AGG(DISTINCT g.genre) FILTER (WHERE g.genre IS NOT NULL) as genres
@@ -133,8 +133,8 @@ const getHotMovies = async (limit = 10) => {
     LEFT JOIN ratings r ON m."movieId" = r."movieId"
     WHERE m.release_year >= 2010
     GROUP BY m."movieId", m.movie_title, m.release_year
-    HAVING COUNT(r.rating) >= 50 AND AVG(r.rating) >= 4.0
-    ORDER BY AVG(r.rating) DESC, m.release_year DESC
+    HAVING COUNT(r.rating) >= 50 AND COALESCE(AVG(r.rating), 0) >= 4.0
+    ORDER BY COALESCE(AVG(r.rating), 0) DESC, m.release_year DESC
     LIMIT $1
   `;
   

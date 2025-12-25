@@ -26,7 +26,7 @@ Bảng này cần thiết để track movies mà user đã xem.
 ### Cách 1: Sử dụng Render Dashboard (Khuyến nghị)
 
 1. Vào [Render Dashboard](https://dashboard.render.com/)
-2. Chọn PostgreSQL instance: `movie_recommendation_system_seei`
+2. Chọn PostgreSQL instance: `your-database-name`
 3. Click tab **"Shell"**
 4. Copy và paste nội dung file `backend/database/setup_watch_history.sql`
 5. Chạy script
@@ -34,7 +34,10 @@ Bảng này cần thiết để track movies mà user đã xem.
 ### Cách 2: Sử dụng psql command line
 
 ```bash
-psql postgresql://movie_recommendation_system_seei_user:FassQu6urZDRnOaeNKAxO5XcwCX19Ct0@dpg-d4m61da4d50c73eeecd0-a.oregon-postgres.render.com/movie_recommendation_system_seei -f backend/database/setup_watch_history.sql
+psql $DATABASE_URL -f backend/database/setup_watch_history.sql
+
+# Or with explicit connection string:
+# psql postgresql://user:password@host:port/database -f backend/database/setup_watch_history.sql
 ```
 
 ### Script sẽ làm gì?

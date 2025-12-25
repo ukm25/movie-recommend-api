@@ -30,7 +30,8 @@ const addOrUpdateRating = async (userId, movieId, rating) => {
 
   // Check if rating already exists
   const checkSql = `
-    SELECT id FROM ratings
+    SELECT "userId", "movieId", rating, timestamp
+    FROM ratings
     WHERE "userId" = $1 AND "movieId" = $2
   `;
   
@@ -43,7 +44,7 @@ const addOrUpdateRating = async (userId, movieId, rating) => {
         UPDATE ratings
         SET rating = $3, timestamp = EXTRACT(EPOCH FROM NOW())
         WHERE "userId" = $1 AND "movieId" = $2
-        RETURNING id, "userId", "movieId", rating, timestamp
+        RETURNING "userId", "movieId", rating, timestamp
       `;
       const result = await query(updateSql, [userId, movieId, rating]);
       return result.rows[0];
@@ -52,7 +53,7 @@ const addOrUpdateRating = async (userId, movieId, rating) => {
       const insertSql = `
         INSERT INTO ratings ("userId", "movieId", rating, timestamp)
         VALUES ($1, $2, $3, EXTRACT(EPOCH FROM NOW()))
-        RETURNING id, "userId", "movieId", rating, timestamp
+        RETURNING "userId", "movieId", rating, timestamp
       `;
       const result = await query(insertSql, [userId, movieId, rating]);
       return result.rows[0];
